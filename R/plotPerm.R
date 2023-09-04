@@ -66,79 +66,193 @@ if(!length(multiple_p_shown)>=2){
            side,
            type=type,
            extend=extend)     ####calculate p value
-  #if(missing(ylim)) {
-  #  xlim =c(0,max(h$density))
-  #}
+  x_values<-distribution
 
-    ran<-range(c(actual,distribution))
-  from=ran[1]-diff(ran)*extend
-  to=ran[2]+diff(ran)*extend
-  if(missing(xlim)) {
-    xlim =c(from,to)
-  }
+  ran_pre<-range(c(actual,distribution))
+  from_pre=ran_pre[1]-diff(ran_pre)*extend
+  to_pre=ran_pre[2]+diff(ran_pre)*extend
 
 
-    h=hist(distribution,
-          breaks,
-          xlim=xlim,
-          #ylim=ylim,
-          axes=F,     ###remove both axes
-          xlab=xlab,
-          ylab=ylab,
-          yaxt='n',
-          freq=FALSE,   ##### if FALSE, probability densities, component density, are plotted (so that the histogram has a total area of one).
-          main=main)
+  t_values_min <-min((from_pre-mean(x_values))/sd(x_values),(to_pre-mean(x_values))/sd(x_values))
+  t_values_max <- max((from_pre-mean(x_values))/sd(x_values),(to_pre-mean(x_values))/sd(x_values))
+  t_values_sim <- seq(t_values_min, t_values_max, length.out = 500)
 
-  h2=max(h$density)*.75  ######as estimated density values, This is to decide how high the vertical line will be drawn
+  ### the simulated x values
+  x_values_sim <- (t_values_sim * sd(x_values)) + mean(x_values)
+
+  #  curve(dt((x-mean(x_values))/(sd(x_values)/sqrt(length(x_values))),
+  #               df=length(x_values)-1))
+  y_values_sim <- dt(t_values_sim, df = length(x_values)-1)
+
+
   if(curve==T){
     if(type=="smooth"){
-      ran<-range(c(actual,distribution))
+      ran<-range(c(actual,x_values,x_values_sim))
       from=ran[1]-diff(ran)*extend
       to=ran[2]+diff(ran)*extend
 
-    #dx=density(distribution,
-    #           #adjust=0.0001,
-    #           from=from,
-    #           to=to,
-    #           n = 100000)
-    #dx_line=density(distribution,
-    #           #adjust=0.0001,
-    #           from=xlim[1],
-    #           to=xlim[2],
-    #           n = 100000)
+      if(missing(xlim)) {
+        xlim =c(from,to)
+      }
+
+      h=hist(distribution,
+             breaks,
+             xlim=xlim,
+             #ylim=ylim,
+             axes=F,     ###remove both axes
+             xlab=xlab,
+             ylab=ylab,
+             yaxt='n',
+             freq=FALSE,   ##### if FALSE, probability densities, component density, are plotted (so that the histogram has a total area of one).
+             main=main)
+      h2=max(h$density)  ######as estimated density values, This is to decide how high the vertical line will be drawn
 
     lines(pP$dens,lwd = 2, col = "red")
+    abline(h = 0)
+    axis(1,pos=0)
+    lines(rep(actual,2),     ###x1,x2 for the line
+          c(0,h2*0.75))          ##y1 ,y2 forthe line
     }
 
     if(type=="t"){
-      #e = 1 * diff(range(distribution))
 
-      x_values<-distribution
-      x_values_sim <- seq(min(distribution), max(distribution), length = 1000)
-    #  curve(dt((x-mean(x_values))/(sd(x_values)/sqrt(length(x_values))),
-    #               df=length(x_values)-1))
-      y_values<-dt((x_values_sim-mean(x_values))/(sd(x_values)/sqrt(length(x_values))),
-                   df=length(x_values)-1)
-      #plot(x_values_sim, y_values*length(x_values))
-      lines(x_values_sim, y_values,#*length(x_values_sim),
-            lwd = 2,col = "red")
+
+      ran<-range(c(actual,x_values,x_values_sim))
+      from=ran[1]-diff(ran)*extend
+      to=ran[2]+diff(ran)*extend
+
+      if(missing(xlim)) {
+        xlim =c(from,to)
+      }
+
+      h=hist(distribution,
+             breaks,
+             xlim=xlim,
+             #ylim=ylim,
+             axes=F,     ###remove both axes
+             xlab=xlab,
+             ylab=ylab,
+             yaxt='n',
+            # freq=FALSE,   ##### if FALSE, probability densities, component density, are plotted (so that the histogram has a total area of one).
+             main=main)
+      h2=max(h$density)
+      axis(1,pos=0)
+
+
+      par(new = TRUE)
+      plot.new()
+      plot.window(xlim=xlim,
+                  ylim=c(0, max(y_values_sim)) ,
+                  xlab = '',
+                  ylab = '',
+                  main = '')
+      lines (x_values_sim ,
+            y_values_sim ,
+         #   type = "l",
+            bty="n",
+          #  axes = FALSE,
+            xlim = xlim,
+           yaxt='n',
+            col= "red",
+           lwd = 2,
+            ylim = c(0, max(y_values_sim)))
+      abline(h = 0)
+
+      lines(rep(actual,2),     ###x1,x2 for the line
+            c(0,max(y_values_sim)*0.75))          ##y1 ,y2 forthe line
+
+      # lines(x_values_sim, y_values,#*length(x_values_sim),
+     #        lwd = 2,col = "red")
 
     }
+
+    if(type=="rank"){
+      ran<-range(c(actual,x_values,x_values_sim))
+      from=ran[1]-diff(ran)*extend
+      to=ran[2]+diff(ran)*extend
+
+      if(missing(xlim)) {
+        xlim =c(from,to)
+      }
+
+      h=hist(distribution,
+             breaks,
+             xlim=xlim,
+             #ylim=ylim,
+             axes=F,     ###remove both axes
+             xlab=xlab,
+             ylab=ylab,
+             yaxt='n',
+             freq=FALSE,   ##### if FALSE, probability densities, component density, are plotted (so that the histogram has a total area of one).
+             main=main)
+      h2=max(h$density)  ######as estimated density values, This is to decide how high the vertical line will be drawn
+      abline(h = 0)
+      #lines(pP$dens,lwd = 2, col = "red")
+      axis(1,pos=0)
+      lines(rep(actual,2),     ###x1,x2 for the line
+            c(0,h2*0.75))          ##y1 ,y2 forthe line
+
+
+    }
+  }else{
+
+    if(type=="t"){
+      ran<-range(c(actual,x_values,x_values_sim))
+      from=ran[1]-diff(ran)*extend
+      to=ran[2]+diff(ran)*extend
+
+      if(missing(xlim)) {
+        xlim =c(from,to)
+      }
+    }else{
+    ran<-range(c(actual,x_values,x_values_sim))
+    from=ran[1]-diff(ran)*extend
+    to=ran[2]+diff(ran)*extend
+
+    if(missing(xlim)) {
+      xlim =c(from,to)
+    }
+    }
+    h=hist(distribution,
+           breaks,
+           xlim=xlim,
+           #ylim=ylim,
+           axes=F,     ###remove both axes
+           xlab=xlab,
+           ylab=ylab,
+           yaxt='n',
+           freq=FALSE,   ##### if FALSE, probability densities, component density, are plotted (so that the histogram has a total area of one).
+           main=main)
+    h2=max(h$density)  ######as estimated density values, This is to decide how high the vertical line will be drawn
+    abline(h = 0)
+    #lines(pP$dens,lwd = 2, col = "red")
+    axis(1,pos=0)
+    lines(rep(actual,2),     ###x1,x2 for the line
+          c(0,h2*0.75))
+
+
   }
 
-  axis(1,pos=0)   ###the coordinate at which the axis line is to be drawn: if not NA this overrides the value of line.
+    ###the coordinate at which the axis line is to be drawn: if not NA this overrides the value of line.
 
   ####comment out if you don't want y axis
  # if(side=='smaller') {axis(2,pos=0,las=1)   #### the style of axis labels. (0=parallel, 1=all horizontal, 2=all perpendicular to axis, 3=all vertical)
 #  }else {axis(2,pos=h$breaks[1],las=1)}
 
-  lines(rep(actual,2),     ###x1,x2 for the line
-        c(0,h2))          ##y1 ,y2 forthe line
+  if(type=="t"&curve==T){
+    ymax<-max(y_values_sim)*0.75
+  }else{
+    ymax<-h2*0.75
+  }
+
 
 if(show_p==T){
+
+
   if(!is.nan(pP$p)&is.numeric(pP$p)){
+
   text(actual,    ###x position of the text
-       h2,        ##y position of the text
+       ymax,        ##y position of the text
        pos=pos,
        ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
        ##respectively indicate positions below, to the left of, above and to the right of the specified (x,y) coordinates.
@@ -152,7 +266,7 @@ if(show_p==T){
 
   if(!is.nan(pP$p)&!is.numeric(pP$p)){
     text(actual,    ###x position of the text
-         h2,        ##y position of the text
+         ymax,        ##y position of the text
          pos=pos,
          ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
          ##respectively indicate positions below, to the left of, above and to the right of the specified (x,y) coordinates.
@@ -177,7 +291,7 @@ if(show_p==T){
   )
 if(permutation_visual=="mean"){
   text(median(distribution),    ###x position of the text
-       max(h$density)*0.003,        ##y position of the text
+       ymax*0.003,        ##y position of the text
        pos=3,
        ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
        labels=paste0("mean=",
@@ -188,7 +302,7 @@ if(permutation_visual=="mean"){
 
   if(permutation_visual=="median"){
     text(median(distribution),    ###x position of the text
-         max(h$density)*0.003,        ##y position of the text
+         ymax*0.003,        ##y position of the text
          pos=3,
          ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
          labels=paste0("median=",
@@ -202,12 +316,37 @@ if(permutation_visual=="mean"){
   }
 }else {
   #############################################################################################
-  ran<-range(c(actual,distribution))
+  x_values<-distribution
+  ran_pre<-range(c(actual,distribution))
+  from_pre=ran_pre[1]-diff(ran_pre)*extend
+  to_pre=ran_pre[2]+diff(ran_pre)*extend
+
+
+  t_values_min <-min((from_pre-mean(x_values))/sd(x_values),(to_pre-mean(x_values))/sd(x_values))
+  t_values_max <- max((from_pre-mean(x_values))/sd(x_values),(to_pre-mean(x_values))/sd(x_values))
+  t_values_sim <- seq(t_values_min, t_values_max, length.out = 500)
+
+  ### the simulated x values
+  x_values_sim <- (t_values_sim * sd(x_values)) + mean(x_values)
+
+  #  curve(dt((x-mean(x_values))/(sd(x_values)/sqrt(length(x_values))),
+  #               df=length(x_values)-1))
+  y_values_sim <- dt(t_values_sim, df = length(x_values)-1)
+
+
+  if("t"%in%multiple_p_shown){
+    ran<-range(c(actual,x_values,x_values_sim))
+  }else{
+    ran<-range(c(actual,x_values,x_values_sim))
+  }
+
   from=ran[1]-diff(ran)*extend
   to=ran[2]+diff(ran)*extend
   if(missing(xlim)) {
     xlim =c(from,to)
   }
+
+
   h=hist(distribution,
          breaks,
          xlim=xlim,
@@ -218,6 +357,9 @@ if(permutation_visual=="mean"){
          yaxt='n',
         freq=FALSE,   ##### if FALSE, probability densities, component density, are plotted (so that the histogram has a total area of one).
          main=main)
+  h2=max(h$density) ######as estimated density values, This is to decide how high the vertical line will be drawn
+  axis(1,pos=0)
+
 
   ppp<-list()
   pP<-c()
@@ -230,81 +372,129 @@ if(permutation_visual=="mean"){
   pP[i]<-ppp[[i]]$p
   }
 
+  if("t"%in%multiple_p_shown&curve==T){
+    ymax<-max(y_values_sim)*0.75
+  }else{
+    ymax<-h2*0.75
+  }
+
+    if(curve==T&"t"%in%multiple_p_shown&!"smooth"%in%multiple_p_shown){
+      abline(h = 0)
 
 
-    if("t"%in%multiple_p_shown&!"smooth"%in%multiple_p_shown){
-      #e = 1 * diff(range(distribution))
 
-
-      x_values<-distribution
-      x_values_sim <- seq(min(distribution), max(distribution), length = 1000)
-      y_values<-dt((x_values_sim-mean(x_values))/(sd(x_values)/sqrt(length(x_values))),
-                   df=length(x_values)-1)
-      #plot(x_values_sim, y_values*length(x_values))
-      lines(x_values_sim, y_values*length(x_values), lwd = 2,col = "green")
-      #
-      #  y_values <- dt(x_values,df=length(distribution)-1)
-      #y_values <- y_values * diff(h$mids[1:2]) * length(distribution)
-
-  #    x_values <- seq(from, to, length = 1000)
-   #   y_values <- dt(x_values,df=length(distribution)-1)
+      par(new = TRUE)
+      plot.new()
+      plot.window(xlim=xlim,
+                  ylim=c(0, max(y_values_sim)) ,
+                  xlab = '',
+                  ylab = '',
+                  main = '')
+     lines (x_values_sim ,
+            y_values_sim ,
+          #  type = "l",
+          #  bty="n",
+          #   axes = FALSE,
+            xlim = xlim,
+            yaxt='n',
+            col= "darkgreen",
+            lwd=2,
+            ylim = c(0, max(y_values_sim)))
 
       legend('topright',
              legend=c("t"),
              lty=1,
+             lwd=2,
              cex =0.5,
              trace = F,####line type
-             col="green",
+             col="darkgreen",
              bty='n')
+
+      lines(rep(actual,2),     ###x1,x2 for the line
+            c(0,max(y_values_sim)*0.75))          ##y1 ,y2 forthe line
 
     }
 
-  h2=max(h$density)*.75  ######as estimated density values, This is to decide how high the vertical line will be drawn
 
-    if("smooth"%in%multiple_p_shown&!"t"%in%multiple_p_shown){
+    if(curve==T&"smooth"%in%multiple_p_shown&!"t"%in%multiple_p_shown){
+            lines(rep(actual,2),     ###x1,x2 for the line
+                  c(0,ymax))          ##y1 ,y2 forthe line
       lines(ppp[[which(multiple_p_shown=="smooth")]]$dens,lwd = 2, col = "red")
+
+
+      abline(h = 0)
       legend('topright',
              legend=c("smooth"),
+             lwd=2,
              lty=1,
              cex =0.5,
              trace = F,####line type
              col="red",
              bty='n')
+
     }
-  if("smooth"%in%multiple_p_shown&"t"%in%multiple_p_shown){
-    x_values<-distribution
-    x_values_sim <- seq(min(distribution), max(distribution), length = 1000)
-    y_values<-dt((x_values_sim-mean(x_values))/(sd(x_values)/sqrt(length(x_values))),
-                 df=length(x_values)-1)
-    #plot(x_values_sim, y_values*length(x_values))
-    lines(x_values_sim, y_values*length(x_values), lwd = 2,col = "green")
+
+  if(curve==T&"smooth"%in%multiple_p_shown&"t"%in%multiple_p_shown){
+        abline(h = 0)
+
+
     lines(ppp[[which(multiple_p_shown=="smooth")]]$dens,lwd = 2, col = "red")
+
+
+
+    par(new = TRUE)
+    plot.new()
+    plot.window(xlim=xlim,
+                ylim=c(0, max(y_values_sim)) ,
+                xlab = '',
+                ylab = '',
+                main = '')
+    lines (x_values_sim ,
+          y_values_sim ,
+        #  type = "l",
+        #  bty="n",
+        #  axes = FALSE,
+          xlim = xlim,
+         lty=1,
+        lwd=2,
+          yaxt='n',
+          col= "darkgreen",
+          ylim = c(0, max(y_values_sim)))
+
+    lines(rep(actual,2),     ###x1,x2 for the line
+          c(0,max(y_values_sim))*0.75)          ##y1 ,y2 forthe line
+
+
+
     legend('topright',
            legend=c("t","smooth"),
            lty=1,
+           lwd=2,
            cex =0.5,
            trace = F,####line type
-           col=c("green","red"),
+           col=c("darkgreen","red"),
            bty='n')
 
 
   }
-  axis(1,pos=0)   ###the coordinate at which the axis line is to be drawn: if not NA this overrides the value of line.
 
   ####comment out if you do not eant axis
   #  if(side=='smaller') {axis(2,pos=0,las=1)}   #### the style of axis labels. (0=parallel, 1=all horizontal, 2=all perpendicular to axis, 3=all vertical)
 #  else {axis(2,
    #          pos=h$breaks[1],las=1)}
 
-  lines(rep(actual,2),     ###x1,x2 for the line
-        c(0,h2))          ##y1 ,y2 forthe line
+
+
 
 
 if(show_p==T){
+  lines(rep(actual,2),     ###x1,x2 for the line
+        c(0,ymax)  )        ##y1 ,y2 forthe line
   for(i in 1:length(ppp)){
   if(!is.nan(ppp[[i]]$p)&is.numeric(ppp[[i]]$p)){
+
     text(actual,    ###x position of the text
-         h2-i*0.1*h2,        ##y position of the text
+         ymax-i*0.1*ymax,        ##y position of the text
          pos=pos,
          ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
          ##respectively indicate positions below, to the left of, above and to the right of the specified (x,y) coordinates.
@@ -316,7 +506,7 @@ if(show_p==T){
   }
     if(!is.nan(ppp[[i]]$p)&!is.numeric(ppp[[i]]$p)){
     text(actual,    ###x position of the text
-         h2-i*0.1*h2,        ##y position of the text
+         ymax-i*0.1*ymax,        ##y position of the text
          pos=pos,
          ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
          ##respectively indicate positions below, to the left of, above and to the right of the specified (x,y) coordinates.
@@ -325,7 +515,7 @@ if(show_p==T){
   }
 }
   text(actual,    ###x position of the text
-       max(h$density)*0.003,        ##y position of the text
+       ymax*0.003,        ##y position of the text
        pos=3,
        ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
        labels=paste0(signif(actual,round_number))
@@ -333,7 +523,7 @@ if(show_p==T){
 
   if(permutation_visual=="mean"){
     text(median(distribution),    ###x position of the text
-         max(h$density)*0.003,        ##y position of the text
+         ymax*0.003,        ##y position of the text
          pos=3,
          ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
          labels=paste0("mean=",
@@ -344,7 +534,7 @@ if(show_p==T){
 
   if(permutation_visual=="median"){
     text(median(distribution),    ###x position of the text
-         max(h$density)*0.003,        ##y position of the text
+         ymax*0.003,        ##y position of the text
          pos=3,
          ##a position specifier for the text. If specified this overrides any adj value given. Values of 1, 2, 3 and 4,
          labels=paste0("median=",
