@@ -22,6 +22,9 @@ if(!is.null(MUVRclassObject$keep)){
   VIRanks_vector<-VIRanks_vector-4
   VIRanks_vector[MUVRclassObject$keep]<-0
 }
+    if(all==TRUE){
+      n <- ncol(MUVRclassObject$inData$X)
+    }
     if(!missing(n)){
       if(n > ncol(MUVRclassObject$inData$X)){
         stop("n bigger than total number of variables")}
@@ -37,7 +40,9 @@ if(!is.null(MUVRclassObject$keep)){
     rownames(VIRanks)<-VIRanks$name
 
   }else{
-
+    if(all==TRUE){
+      n <- ncol(MUVRclassObject$inData$X)
+    }
     if(!missing(n)){
       if(n > ncol(MUVRclassObject$inData$X)){
         stop("n bigger than total number of variables")
