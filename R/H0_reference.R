@@ -11,7 +11,8 @@
 #'
 H0_reference<-function(Y,
                    n=1000,
-                   fitness=c("Q2","BER","MISS","AUROC")
+                   fitness=c("Q2","BER","MISS","AUROC"),
+                   ...
 ){
 
   if(missing(fitness)){

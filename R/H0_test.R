@@ -1,36 +1,21 @@
-#' Make permutations with data and default settings from an actual MUVR object
+#' Make permutation or resampling with data and default settings from an actual MUVR object
 #'
-#' This function will extract data and parameter settings from a MUVR object and run standard permutations.
+#' This function will extract data and parameter settings from a MUVR object and run standard permutation or resampling test.
 #' This will fit a standard case of multivariate predictive modelling in either a regression, classification or multilevel case.
 #' However, if an analysis has a complex sample dependency which requires constrained permutation of your response vector
 #' or if a variable pre-selection is performed for decreased computational burden, then permutaion loops should be constructed manually.
-#' In those cases, View(permutations) can be a first start from which to build custom solutions for permutation analysis.
+#' In those cases, View(H0_test) can be a first start from which to build custom solutions for permutation analysis.
 #' @param MUVRclassObject A 'MUVR' class object
 #' @param n number of permutations to run
 #' @param nRep number of repetitions for each permutation (defaults to value of actual model)
 #' @param nOuter number of outer validation segments for each permutation (defaults to value of actual model)
 #' @param varRatio varRatio for each permutation (defaults to value of actual model)
 #' @param parallel whether to run calculations using parallel processing - which requires registered backend (defaults to value of actual model)
-#' @param type Either permutations or resamplings, To decide the permutation sampling is performed on original Y values or the probability(If Y categorical)/distributions(If Y continuous) of Y values
+#' @param type Either permutation or resampling, To decide the permutation sampling is performed on original Y values or the probability(If Y categorical)/distributions(If Y continuous) of Y values
 
 #' @return  permutation_output: A permutation matrix with permuted fitness statistics (nrow=n and ncol=3 for min/mid/max)
 #'
 #' @export
-
-## library(MUVR)
-##  library(doParallel)
-##  nCore=detectCores()-1
-##  cl=makeCluster(nCore)
-##  registerDoParallel(cl)
-##  nRep=2*nCore
-##  varRatio=.75
-##  nOuter=6
-##  n=50
-## R12ML=MUVR(X=mlr12,ML=T,nRep=nRep,nOuter=nOuter,varRatio=varRatio,method='RF')
-##  permR12=permutations(R12ML)
-## stopCluster(cl)
-## permutationPlot(R12ML,permR12)
-
 
 
 H0_test = function(MUVRclassObject,
@@ -39,8 +24,12 @@ H0_test = function(MUVRclassObject,
                         nOuter,
                         varRatio,
                         parallel,
-                        type =  "resamplings"  ## type =c("permutation","resampling")
+                        type = c( "resampling","permutation")  ## type =c("permutation","resampling") #if (missing)
                         ) {
+  if(missing(type)){
+    type <- "resampling"
+  }
+
   if (!any(class(MUVRclassObject) == 'MUVR')){stop('Wrong object class')}
   ##substitute() is often paired with deparse(). That function takes the result of substitute(), an expression,
   ##and turns it into a character vector.
@@ -112,11 +101,11 @@ H0_test = function(MUVRclassObject,
   #}
 
   if (missing(type)) {
-    type == "resamplings"
+    type == "resampling"
   }
   if (!missing(type)) {
-    if (!type %in% c("permutations", "resamplings")) {
-      stop("There are only real and resamplings options.
+    if (!type %in% c("permutation", "resampling")) {
+      stop("There are only permutation and resampling options.
                                                           You are a genius if you come up a third one")
     }
   }
@@ -137,7 +126,7 @@ H0_test = function(MUVRclassObject,
                                          1:n)
     ###############################################################
     ## scenario 1.1
-    if (type == "permutations") {
+    if (type == "permutation") {
       ##################################################################################################################################
       ###I also added permutation test for auc when it is classfication
       ###hBER could be added too when we want to integrate it into the permutationtest
@@ -228,7 +217,7 @@ H0_test = function(MUVRclassObject,
 
     ########################################################################################
     ## scenario 1.2
-    if (type == "resamplings") {
+    if (type == "resampling") {
       ## scenario 1.2.1
       if (permutation_type == "Q2") {
         # if(DA==T){stop("Y is supposed to be continuous")}
@@ -418,7 +407,7 @@ H0_test = function(MUVRclassObject,
 
 
 
-    }   ### where the if type==resamplings ends
+    }   ### where the if type==resampling ends
 
 
 
@@ -465,7 +454,7 @@ H0_test = function(MUVRclassObject,
                                )) ###if use auc this is a list
       }
       }
-    if (type == "permutations") {
+    if (type == "permutation") {
       if(ML){num=1}else{num=ncol(MUVRclassObject$auc)}
       for (s in 1:num) {
         for (p in 1:n) {
@@ -560,7 +549,7 @@ H0_test = function(MUVRclassObject,
     }  ## end for type is real
 
 
-    if (type == "resamplings") {
+    if (type == "resampling") {
       if(ML){num=1
       }else{
 
@@ -677,7 +666,7 @@ H0_test = function(MUVRclassObject,
     #                  "permutation_output")
       return(permutation_output)
 
-    } ## end for type is resamplings
+    } ## end for type is resampling
 
   } ## end for AUROC
 

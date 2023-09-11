@@ -1,35 +1,35 @@
-#' the function to get the variables selected
+#' the function will get the variables selected
 #' @param rdCVnetObject a object from rdCVnet
 #' @param span for smooth curve:  how smooth the curve need to be
 #' @param k for smooth curve:using the gam method
 #' @param fit_curve gam or loess
 #' @param outlier if remove ourlier variables or not "none","IRQ", "residual"
-#' @param percent_quantile range from 0 to 0.5. When select_variables_by quantile, this value represent the first quantile.
-#' @param percent_smoothcurve If select_variables_by smoothcurve, then it is robust
-#' @param option quantile or smoothcurve
+#' @param quantile range from 0 to 0.5. When select_variables_by quantile, this value represent the first quantile.
+#' @param robust If select_variables_by fitness, then it is robust
+#' @param option quantile or fitness
 #'
 #' @return a rdCVnet object
 #' @export
 ## outlier
-rdCVnet_getVar<-function(rdCVnetObject,
-               option=c("quantile", "smoothcurve"),
+getVar<-function(rdCVnetObject,
+               option=c("quantile", "fitness"),
                fit_curve="loess",
                span=1,   # c(0.5, 0.75, 1,1.25),
                k=5,
                outlier="none",
-               percent_smoothcurve=0.05,
-               percent_quantile=0.25){
+               robust=0.05,
+               quantile=0.25){
   if(!fit_curve%in%c("loess","gam")){
     stop("\nThis curve fitting method is not supported.")
   }
-   if(percent_quantile<=0|percent_quantile>=0.5|!is.numeric(percent_quantile)){
+   if(quantile<=0|quantile>=0.5|!is.numeric(quantile)){
       stop("\npercent_quantile must be between 0 and 0.5")
     }
-    if(percent_smoothcurve<=0|percent_smoothcurve>1|!is.numeric(percent_smoothcurve)){
+    if(robust<=0|robust>1|!is.numeric(robust)){
       stop("\npercent_smoothcurve must be between 0 and 1")
     }
   if(missing(option)){
-    option="smoothcurve"
+    option="fitness"
   }
   if(!outlier%in%c("none","IQR","residual")){
     stop("\nThis option is not supported")
@@ -94,7 +94,7 @@ rdCVnet_getVar<-function(rdCVnetObject,
     cum_varTable<-rdCVnetObject$cum_varTable
     varTable<-rdCVnetObject$varTable
     minmidmax_quantile<-quantile(num_of_variables,
-                                 c(percent_quantile, 0.5, 1-percent_quantile))
+                                 c(quantile, 0.5, 1-quantile))
     minlimit_quantile=floor( minmidmax_quantile[1])  ### take the floor value in case no value is selected
     midlimit_quantile=floor( minmidmax_quantile[2])  ###
     maxlimit_quantile=floor( minmidmax_quantile[3])
@@ -185,7 +185,7 @@ rdCVnet_getVar<-function(rdCVnetObject,
 
     names(nVar)<-c("Qmin","Qmid","Qmax")
 
-  }else if (option=="smoothcurve"){
+  }else if (option=="fitness"){
     cum_varTable<-rdCVnetObject$cum_varTable
     varTable<-rdCVnetObject$varTable
     nonZeroRep_vector<-c(num_of_variables)
@@ -223,9 +223,9 @@ rdCVnet_getVar<-function(rdCVnetObject,
 
     scaled_predict_temp<-(predict_temp-min(predict_temp))/abs(diff(range(predict_temp)))
     maxIndex_smoothcurve <-
-      max(which(scaled_predict_temp <= percent_smoothcurve))
+      max(which(scaled_predict_temp <= robust))
     minIndex_smoothcurve <-
-      min(which(scaled_predict_temp <= percent_smoothcurve))
+      min(which(scaled_predict_temp <= robust))
     varMin_smoothcurve <- nonZeroRep_vector_grid[minIndex_smoothcurve]
     varMax_smoothcurve <- nonZeroRep_vector_grid[maxIndex_smoothcurve]
     varMid_smoothcurve <-

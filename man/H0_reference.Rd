@@ -4,7 +4,7 @@
 \alias{H0_reference}
 \title{make referenc edistribution}
 \usage{
-H0_reference(Y, n = 1000, fitness = c("Q2", "BER", "MISS", "AUROC"))
+H0_reference(Y, n = 1000, fitness = c("Q2", "BER", "MISS", "AUROC"), ...)
 }
 \arguments{
 \item{Y}{the taget variable}

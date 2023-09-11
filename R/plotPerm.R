@@ -35,7 +35,7 @@ plotPerm=function(actual,
                   pos,  ####Choice of position of p-value label (if default is not adequate)
                   main=NULL,
                   permutation_visual="none",
-                  curve=F,
+                  curve=T,
                   extend=0.1,
                   multiple_p_shown=NULL,
                   show_p=T,
